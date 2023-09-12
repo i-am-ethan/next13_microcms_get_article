@@ -1,95 +1,72 @@
+
+'use client'
+
 import Image from 'next/image'
+import { createClient } from 'microcms-js-sdk'; //ES6
+import { useEffect, useState } from 'react';
+import { BlogResponse } from '@/types/microcms';
 import styles from './page.module.css'
+import { formatDateJP } from "@/lib/utils";
+
+const client = createClient({
+  serviceDomain: process.env.SERVICE_DOMAIN || "",
+  apiKey: process.env.API_KEY || "",
+});
 
 export default function Home() {
+
+  const [blogData, setBlogData] = useState<BlogResponse | null>(null);
+
+  const fetchData = async () => {
+    const response = await client.get({
+      customRequestInit: {
+        next: {
+          revalidate: 60,
+        },
+      },
+      endpoint: process.env.END_POINT || "",
+    });
+    console.log(response)
+    setBlogData(response);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  if (!blogData) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    <>
+      <h1 className={styles.title}>My Development Blog</h1>
+      <p>このサイトはMicroCMSで追加した記事データを表示するためのデモサイトです！</p>
+        <ul className={styles.ul}>
+          {blogData.contents.map(blog => (
+            <li className={styles.li}>
+              <div key={blog.id}>
+                <Image 
+                  className={styles.blogImage}
+                  src={blog.eyecatch?.url || '/img/placeholder.webp'} 
+                  width={blog.eyecatch?.width || 500} 
+                  height={blog.eyecatch?.height || 300} 
+                  alt="Eyecatch Image" 
+                />
+                <div className={styles.blogBottom}>
+                  <h2 className={styles.blogTitle}>{blog.title}</h2>
+                  <div className={styles.blogContent} dangerouslySetInnerHTML={{ __html: blog.content || '' }} />
+                  <time className={styles.publishedDate} dateTime={blog.publishedAt}>
+                    {formatDateJP(blog.publishedAt)}に投稿
+                  </time>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+    </>
+  );
 }
+
+
+
