@@ -5,6 +5,18 @@ Next.js13でmicroCMSで書いたブログコンテンツを取得するための
 
 ![プロジェクトのスクリーンショット](./ss_img/fv.png)
 
+## 事前準備
+microCMSでプロジェクトとAPIを新規作成してください。<br>
+参考:https://document.microcms.io/manual/create-api<br>
+なお、こちらのリポジトリでは<br>
+API型はリスト形式<br>
+APIスキーマは<br>
+title<br>
+content<br>
+eyecatch<br>
+を使用しています。
+
+
 
 ## 起動方法
 パッケージのインストール
